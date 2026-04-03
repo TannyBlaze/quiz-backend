@@ -118,6 +118,9 @@ return [
             'driver' => 'mongodb',
             'dsn' => env('MONGODB_URI'),
             'database' => env('DB_DATABASE'),
+            'options' => [
+                'database' => env('DB_DATABASE'),
+            ],
         ],
 
     ],
