@@ -10,7 +10,6 @@ use MongoDB\BSON\ObjectId;
 
 class AuthController extends Controller
 {
-    // 📝 REGISTER (PUBLIC)
     public function register(Request $request)
     {
         $request->validate([
@@ -36,7 +35,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // 🔥 ADMIN CREATE USER
     public function createUser(Request $request)
     {
         $request->validate([
@@ -60,7 +58,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // 🔑 LOGIN
     public function login(Request $request)
     {
         $request->validate([
@@ -85,7 +82,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // 👤 CURRENT USER
     public function user(Request $request)
     {
         $token = $request->bearerToken();
@@ -94,7 +90,6 @@ class AuthController extends Controller
         return response()->json(['user' => $user]);
     }
 
-    // 🚪 LOGOUT
     public function logout(Request $request)
     {
         $token = $request->bearerToken();
@@ -109,7 +104,6 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out']);
     }
 
-    // 👑 GET ALL USERS
     public function allUsers()
     {
         $users = User::all()->map(function ($user) {
@@ -124,7 +118,6 @@ class AuthController extends Controller
         return response()->json($users);
     }
 
-    // 🔥 UPDATE ROLE
     public function updateRole(Request $request, $id)
     {
         $request->validate([
@@ -143,7 +136,6 @@ class AuthController extends Controller
         return response()->json(['message' => 'Role updated']);
     }
 
-    // 🔥 UPDATE USER INFO (NAME + EMAIL)
     public function updateUser(Request $request, $id)
     {
         $user = User::where('_id', new ObjectId($id))->first();
@@ -165,7 +157,6 @@ class AuthController extends Controller
         return response()->json(['message' => 'User updated']);
     }
 
-    // ❌ DELETE
     public function deleteUser($id)
     {
         $user = User::where('_id', new ObjectId($id))->first();

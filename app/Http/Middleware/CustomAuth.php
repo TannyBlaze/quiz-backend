@@ -16,7 +16,6 @@ class CustomAuth
             return response()->json(['message' => 'No token provided'], 401);
         }
 
-        // Remove "Bearer "
         $token = str_replace('Bearer ', '', $token);
 
         $user = User::where('api_token', $token)->first();
@@ -25,7 +24,6 @@ class CustomAuth
             return response()->json(['message' => 'Invalid token'], 401);
         }
 
-        // ✅ FIXED: use attributes instead of merge
         $request->attributes->set('auth_user', $user);
 
         return $next($request);

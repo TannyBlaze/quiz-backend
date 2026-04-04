@@ -9,7 +9,6 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        // ✅ FIXED
         $user = $request->attributes->get('auth_user');
 
         if (!$user || !in_array($user->role, $roles)) {

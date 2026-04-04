@@ -25,8 +25,6 @@ class QuestionController extends Controller
         ];
     }
 
-    // ================= COURSES =================
-
     public function index(Request $request)
     {
         $user = $request->attributes->get('auth_user');
@@ -42,6 +40,50 @@ class QuestionController extends Controller
         return response()->json(
             $courses->map(fn($c) => $this->formatCourse($c))
         );
+    }
+
+    public function store(Request $request)
+    {
+        $user = $request->attributes->get('auth_user');
+
+        $course = Course::create([
+            'title' => $request->title,
+            'questions' => $request->questions ?? [],
+            'created_by' => $user->id,
+            'is_public' => false,
+            'timer' => $request->timer ?? 0,
+            'question_count' => $request->question_count ?? 0,
+            'max_attempts' => $request->max_attempts ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Course created',
+            'course' => $this->formatCourse($course)
+        ], 201);
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $user = $request->attributes->get('auth_user');
+
+        $course = Course::where('_id', new \MongoDB\BSON\ObjectId($id))->first();
+
+        if (!$course) {
+            return response()->json(['message' => 'Not found'], 404);
+        }
+
+        if (
+            $course->created_by != $user->id &&
+            $user->role !== 'admin'
+        ) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $course->delete();
+
+        return response()->json([
+            'message' => 'Course deleted'
+        ]);
     }
 
     public function show($id)
@@ -105,8 +147,6 @@ class QuestionController extends Controller
         return response()->json($this->formatCourse($course));
     }
 
-    // ================= QUIZ =================
-
     public function quiz(Request $request, $id)
     {
         $user = $request->attributes->get('auth_user');
@@ -117,7 +157,6 @@ class QuestionController extends Controller
             return response()->json(['message' => 'Not available'], 403);
         }
 
-        // 🔒 CHECK ATTEMPTS
         if (!empty($course->max_attempts)) {
             $attemptCount = Attempt::where('course_id', (string) $course->_id)
                 ->where('user_id', $user->id)
@@ -164,7 +203,6 @@ class QuestionController extends Controller
             return response()->json(['message' => 'Not found'], 404);
         }
 
-        // 🔒 CHECK ATTEMPTS AGAIN (DOUBLE PROTECTION)
         if (!empty($course->max_attempts)) {
             $attemptCount = Attempt::where('course_id', (string) $course->_id)
                 ->where('user_id', $user->id)
@@ -197,22 +235,22 @@ class QuestionController extends Controller
             }
         }
 
+        $total = count($answers);
+
         Attempt::create([
             'user_id' => $user->id,
             'course_id' => (string) $course->_id,
             'score' => $score,
-            'total' => count($questions),
+            'total' => $total,
             'answers' => $answers,
-            'time_spent' => $timeSpent, // 🆕
+            'time_spent' => $timeSpent,
         ]);
 
         return response()->json([
             'score' => $score,
-            'total' => count($questions),
+            'total' => $total,
         ]);
     }
-
-    // ================= 🆕 RESULTS =================
 
     public function getAttempts(Request $request, $id)
     {
@@ -224,7 +262,6 @@ class QuestionController extends Controller
             return response()->json(['message' => 'Not found'], 404);
         }
 
-        // only owner or admin
         if (
             $course->created_by != $user->id &&
             $user->role !== 'admin'
@@ -243,8 +280,8 @@ class QuestionController extends Controller
                 'score' => $a->score,
                 'total' => $a->total,
                 'percentage' => $a->total ? round(($a->score / $a->total) * 100) : 0,
-                'time_spent' => $a->time_spent ?? null, // 🆕
-                'attempt_number' => $index + 1, // 🆕
+                'time_spent' => $a->time_spent ?? null,
+                'attempt_number' => $index + 1,
                 'date' => $a->created_at ?? null,
             ];
         });
