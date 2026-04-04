@@ -114,10 +114,10 @@ class AuthController extends Controller
     {
         $users = User::all()->map(function ($user) {
             return [
-                '_id' => (string) $user->_id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
+                '_id' => isset($user->_id) ? (string) $user->_id : null,
+                'name' => $user->name ?? '',
+                'email' => $user->email ?? '',
+                'role' => $user->role ?? 'player',
             ];
         });
 
