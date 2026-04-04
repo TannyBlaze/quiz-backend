@@ -7,17 +7,16 @@ use Illuminate\Support\Facades\DB;
 
 Route::get('/test-db', function () {
     try {
-        DB::connection()->getMongoClient(); // force connection
-
+        \App\Models\User::first();
         return response()->json([
             'status' => 'success',
-            'message' => 'MongoDB connected successfully'
+            'message' => 'DB working'
         ]);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
             'message' => $e->getMessage()
-        ], 500);
+        ]);
     }
 });
 
