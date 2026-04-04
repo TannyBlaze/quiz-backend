@@ -2,7 +2,7 @@ FROM php:8.4-cli
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    unzip curl git libzip-dev zip \
+    unzip curl git libzip-dev zip libssl-dev pkg-config \
     && docker-php-ext-install zip
 
 # Install MongoDB extension

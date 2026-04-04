@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\QuestionController;
-
 use Illuminate\Support\Facades\DB;
 
 Route::get('/test-db', function () {
