@@ -4,6 +4,24 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\QuestionController;
 
+use Illuminate\Support\Facades\DB;
+
+Route::get('/test-db', function () {
+    try {
+        DB::connection()->getMongoClient(); // force connection
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'MongoDB connected successfully'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+});
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
