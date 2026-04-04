@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'custom.auth' => \App\Http\Middleware\CustomAuth::class,
         ]);
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
 
         $middleware->replace(Authenticate::class, \App\Http\Middleware\CustomAuth::class);
     })
