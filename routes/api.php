@@ -51,24 +51,6 @@ Route::get('/mongo-test', function () {
     }
 });
 
-Route::get('/mongo-test', function () {
-    try {
-        $client = new Client(env('MONGODB_URI'));
-        $db = $client->selectDatabase(env('DB_DATABASE'));
-        $collections = $db->listCollections();
-
-        return response()->json([
-            'status' => 'connected',
-            'collections' => iterator_to_array($collections)
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ]);
-    }
-});
-
 Route::get('/model-test', function () {
     try {
         $user = \App\Models\User::first();

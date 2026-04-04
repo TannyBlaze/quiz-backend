@@ -10,7 +10,7 @@ class CustomAuth
 {
     public function handle(Request $request, Closure $next)
     {
-        $token = $request->header('Authorization');
+        $token = $request->bearerToken();
 
         if (!$token) {
             return response()->json(['message' => 'No token provided'], 401);
