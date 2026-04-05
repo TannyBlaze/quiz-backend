@@ -169,18 +169,21 @@ class QuestionController extends Controller
             }
         }
 
-        $questions = collect($course->questions ?? [])->shuffle();
+        $questions = collect($course->questions ?? [])
+            ->map(function ($q, $index) {
+                $q['original_index'] = $index;
+                return $q;
+            })
+            ->shuffle();
 
         if (!empty($course->question_count)) {
             $questions = $questions->take($course->question_count);
         }
 
-        $questions = $questions->map(function ($q, $index) {
+        $questions = $questions->map(function ($q) {
             if (isset($q['options'])) {
                 $q['options'] = collect($q['options'])->shuffle()->values();
             }
-
-            $q['index'] = $index;
 
             return $q;
         })->values();
@@ -223,7 +226,7 @@ class QuestionController extends Controller
         $questions = collect($course->questions ?? []);
 
         foreach ($answers as $answer) {
-            $index = $answer['index'] ?? null;
+            $index = $answer['original_index'] ?? null;
             $value = $answer['value'] ?? null;
 
             if ($index === null) continue;
