@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Str;
 use MongoDB\BSON\ObjectId;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -18,14 +19,21 @@ class AuthController extends Controller
             'password' => 'required|min:6'
         ]);
 
-        $token = Str::random(60);
-
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'player',
-            'api_token' => $token
+            'api_token' => null
+        ]);
+
+        $token = Str::random(60);
+
+        DB::connection('mongodb')->table('tokens')->insert([
+            'user_id' => (string) $user->_id,
+            'token' => $token,
+            'created_at' => now(),
+            'expires_at' => now()->addDays(7),
         ]);
 
         return response()->json([
@@ -72,8 +80,13 @@ class AuthController extends Controller
         }
 
         $token = Str::random(60);
-        $user->api_token = $token;
-        $user->save();
+
+        DB::connection('mongodb')->table('tokens')->insert([
+            'user_id' => (string) $user->_id,
+            'token' => $token,
+            'created_at' => now(),
+            'expires_at' => now()->addDays(7),
+        ]);
 
         return response()->json([
             'message' => 'Login successful',
@@ -84,22 +97,17 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        $token = $request->bearerToken();
-        $user = User::where('api_token', $token)->first();
-
-        return response()->json(['user' => $user]);
+        return response()->json(['user' => $request->attributes->get('auth_user')]);
     }
 
     public function logout(Request $request)
     {
         $token = $request->bearerToken();
 
-        $user = User::where('api_token', $token)->first();
-
-        if ($user) {
-            $user->api_token = null;
-            $user->save();
-        }
+        DB::connection('mongodb')
+            ->table('tokens')
+            ->where('token', $token)
+            ->delete();
 
         return response()->json(['message' => 'Logged out']);
     }
@@ -108,7 +116,7 @@ class AuthController extends Controller
     {
         $users = User::all()->map(function ($user) {
             return [
-                '_id' => isset($user->_id) ? (string) $user->_id : null,
+                '_id' => isset($user->_id) ? (string) $user->_id : (string) $user->id,
                 'name' => $user->name ?? '',
                 'email' => $user->email ?? '',
                 'role' => $user->role ?? 'player',
