@@ -20,6 +20,7 @@ class QuestionController extends Controller
             'is_public' => $course->is_public,
             'timer' => $course->timer ?? 0,
             'question_count' => $course->question_count ?? count($course->questions ?? []),
+            'max_attempts' => $course->max_attempts ?? null,
             'created_at' => $course->created_at ?? null,
             'updated_at' => $course->updated_at ?? null,
         ];
