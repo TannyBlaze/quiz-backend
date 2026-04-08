@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Attempt;
 use Illuminate\Support\Str;
 use MongoDB\BSON\ObjectId;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,9 @@ class AuthController extends Controller
             'role' => 'player',
             'api_token' => null
         ]);
+
+        Attempt::where('user_email', $user->email)
+            ->update(['user_id' => $user->id]);
 
         $token = Str::random(60);
 
@@ -60,6 +64,9 @@ class AuthController extends Controller
             'api_token' => null
         ]);
 
+        Attempt::where('user_email', $user->email)
+            ->update(['user_id' => $user->id]);
+
         return response()->json([
             'message' => 'User created',
             'user' => $user
@@ -78,6 +85,9 @@ class AuthController extends Controller
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
+
+        Attempt::where('user_email', $user->email)
+            ->update(['user_id' => $user->id]);
 
         $token = Str::random(60);
 

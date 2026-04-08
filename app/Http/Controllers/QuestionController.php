@@ -243,6 +243,8 @@ class QuestionController extends Controller
 
         Attempt::create([
             'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_email' => $user->email,
             'course_id' => (string) $course->_id,
             'score' => $score,
             'total' => $total,
@@ -273,19 +275,27 @@ class QuestionController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $attempts = Attempt::where('course_id', (string) $course->_id)->get();
+        $attempts = Attempt::where('course_id', (string) $course->_id)
+            ->orderBy('created_at')
+            ->get();
 
-        $data = $attempts->map(function ($a, $index) {
+        $data = $attempts->map(function ($a) {
+
+            $userAttempts = Attempt::where('course_id', $a->course_id)
+                ->where('user_email', $a->user_email)
+                ->where('created_at', '<=', $a->created_at)
+                ->count();
+
             $user = User::find($a->user_id);
 
             return [
-                'user' => $user ? $user->name : 'Unknown',
-                'email' => $user ? $user->email : '',
+                'user' => $user ? $user->name : ($a->user_name ?? 'Unknown'),
+                'email' => $user ? $user->email : ($a->user_email ?? ''),
                 'score' => $a->score,
                 'total' => $a->total,
                 'percentage' => $a->total ? round(($a->score / $a->total) * 100) : 0,
                 'time_spent' => $a->time_spent ?? null,
-                'attempt_number' => $index + 1,
+                'attempt_number' => $userAttempts,
                 'date' => $a->created_at ?? null,
             ];
         });
